@@ -1,0 +1,38 @@
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: lmsensors
+spec:
+  selector:
+    matchLabels:
+      name: lmsensors
+  template:
+    metadata:
+      labels:
+        name: lmsensors
+    spec:
+      containers:
+      - name: lmsensors
+        image: ghcr.io/michaeltrip/lmsensors-container:main
+        imagePullPolicy: Always
+        env:
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        securityContext:
+          privileged: true
+        volumeMounts:
+          - mountPath: /data
+            name: data-volume
+          - mountPath: /etc/os-release
+            name: etc-osrelease-host      
+      volumes:
+      - name: data-volume
+        persistentVolumeClaim:
+          claimName: pvc-lmsensors
+      - name: etc-osrelease-host
+        hostPath:
+          path: /etc/os-release
+          type: FileOrCreate

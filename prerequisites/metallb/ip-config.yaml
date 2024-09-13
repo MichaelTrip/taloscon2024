@@ -1,0 +1,19 @@
+apiVersion: metallb.io/v1beta1
+kind: IPAddressPool
+metadata:
+  name: default
+  namespace: kube-system
+spec:
+  addresses:
+    - 172.16.1.66-172.16.1.79
+
+---
+
+apiVersion: metallb.io/v1beta1
+kind: L2Advertisement
+metadata:
+  name: l2advertisement
+  namespace: kube-system
+spec:
+  ipAddressPools:
+  - default

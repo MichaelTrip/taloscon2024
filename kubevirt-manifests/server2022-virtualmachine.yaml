@@ -1,0 +1,95 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: winhd
+spec:
+  storageClassName: longhorn-rwx
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 35Gi
+---
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+  name: server2022
+spec:
+  running: true
+  template:
+    metadata:
+      labels:
+        kubevirt.io/domain: server2022
+    spec:
+      domain:
+        cpu:
+          cores: 2
+          model: Haswell-noTSX-IBRS
+        devices:
+          disks:
+          - bootOrder: 2
+            cdrom:
+              bus: sata
+            name: cdromiso
+          - bootOrder: 1
+            disk:
+              bus: virtio
+            name: harddrive
+          - bootOrder: 3
+            cdrom:
+              bus: sata
+            name: virtiocontainerdisk
+          interfaces:
+          - name: podnet
+            masquerade: {}
+           
+        machine:
+          type: q35
+        resources:
+          requests:
+            memory: 8G
+      networks:
+      - name: podnet
+        pod: {}
+      volumes:
+      - name: cdromiso
+        persistentVolumeClaim:
+          claimName: win2022-iso
+      - name: harddrive
+        persistentVolumeClaim:
+          claimName: winhd
+      - containerDisk:
+          image: quay.io/kubevirt/virtio-container-disk:v1.2.0
+        name: virtiocontainerdisk
+---
+kind: Service
+apiVersion: v1
+metadata:
+  creationTimestamp: null
+  labels:
+    kubevirt.io/domain: server2022
+  name: server2022-rdp
+spec:
+  externalTrafficPolicy: Local
+  ports:
+  - name: rdp
+    port: 3389
+    protocol: TCP
+    targetPort: 3389
+  - name: http
+    port: 80
+    protocol: TCP
+    targetPort: 80
+  - name: https
+    port: 443
+    protocol: TCP
+    targetPort: 443
+  - name: ssh
+    port: 22
+    protocol: TCP
+    targetPort: 22
+  selector:
+    kubevirt.io/domain: server2022
+  type: LoadBalancer
+status:
+  loadBalancer: {}

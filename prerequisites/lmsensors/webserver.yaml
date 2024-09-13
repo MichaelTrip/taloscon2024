@@ -1,0 +1,226 @@
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: index-html
+data:
+  index.html: |
+    <!DOCTYPE html>
+    <html>
+    <head>
+    <title>LMSensors and Fastfetch Data</title>
+    <style>
+      body {
+        font-family: Courier, monospace;
+        background-color: #000000;
+        color: #FFFFFF;
+        margin: 0;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      .terminal {
+        background-color: #000000;
+        border: 3px solid #4CAF50;
+        padding: 20px;
+        border-radius: 5px;
+        width: 80%;
+        height: 80%;
+        overflow: auto;
+      }
+      .file-content {
+        color: #FFFFFF;
+        font-family: Courier, monospace;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+      }
+      .file-title {
+        color: #4CAF50;
+        margin-top: 20px;
+      }
+      .tabs {
+        display: flex;
+        cursor: pointer;
+        margin-bottom: 20px;
+      }
+      .tab {
+        padding: 10px 20px;
+        margin-right: 5px;
+        border: 1px solid #4CAF50;
+        border-radius: 5px 5px 0 0;
+        background-color: #000000;
+        color: #4CAF50;
+        font-weight: bold;
+      }
+      .tab-content {
+        display: none;
+      }
+      .tab-content.active {
+        display: block;
+      }
+      .tab.active {
+        background-color: #4CAF50;
+        color: #000000;
+      }
+    </style>
+    </head>
+    <body>
+    <div class="terminal">
+      <div class="tabs">
+        <!-- Tabs will be dynamically generated here -->
+      </div>
+      <div id="content-container">
+        <!-- Tab content will be dynamically generated here -->
+      </div>
+      <script>
+        var nodes = [
+          {name: 'virt1', lmsensorsFiles: ['lmsensors-virt1.txt'], fastfetchFiles: ['fastfetch-virt1.txt']},
+          {name: 'virt2', lmsensorsFiles: ['lmsensors-virt2.txt'], fastfetchFiles: ['fastfetch-virt2.txt']},
+          {name: 'virt3', lmsensorsFiles: ['lmsensors-virt3.txt'], fastfetchFiles: ['fastfetch-virt3.txt']}
+        ];
+        var shellPrompt = "root@lmsensors:~# cat ";
+        var activeTab = 'virt1'; // Default active tab
+
+        function loadFiles(fileNames, container) {
+          container.innerHTML = ''; // Clear previous content
+          fileNames.forEach(function(fileName){
+            fetch(fileName)
+            .then(response => response.text())
+            .then(data => {
+              var preElement = document.createElement("pre");
+              preElement.className = "file-content";
+              preElement.textContent = data;
+
+              var h2Element = document.createElement("h2");
+              h2Element.className = "file-title";
+              h2Element.textContent = shellPrompt + fileName;
+
+              var divElement = document.createElement("div");
+              divElement.appendChild(h2Element);
+              divElement.appendChild(preElement);
+
+              container.appendChild(divElement);
+            });
+          });
+        }
+
+        function setupTabs() {
+          var tabs = document.querySelector(".tabs");
+          var contentContainer = document.getElementById("content-container");
+
+          nodes.forEach(function(node) {
+            // Create tab
+            var tab = document.createElement("div");
+            tab.className = "tab";
+            tab.textContent = node.name;
+            tab.setAttribute("data-tab", node.name);
+            tabs.appendChild(tab);
+
+            // Create tab content container
+            var tabContent = document.createElement("div");
+            tabContent.className = "tab-content";
+            tabContent.id = node.name;
+
+            var lmsensorsContainer = document.createElement("div");
+            lmsensorsContainer.className = "lmsensors";
+            loadFiles(node.lmsensorsFiles, lmsensorsContainer);
+
+            var fastfetchContainer = document.createElement("div");
+            fastfetchContainer.className = "fastfetch";
+            loadFiles(node.fastfetchFiles, fastfetchContainer);
+
+            tabContent.appendChild(lmsensorsContainer);
+            tabContent.appendChild(fastfetchContainer);
+
+            contentContainer.appendChild(tabContent);
+          });
+
+          // Set the active tab based on the stored state
+          setActiveTab(activeTab);
+
+          tabs.addEventListener("click", function(event) {
+            if (event.target.classList.contains("tab")) {
+              var target = event.target.getAttribute("data-tab");
+              activeTab = target; // Update the active tab state
+              setActiveTab(activeTab);
+            }
+          });
+
+          // Refresh active tab content every 30 seconds
+          setInterval(function() {
+            refreshActiveTab();
+          }, 30000);
+        }
+
+        function setActiveTab(tabName) {
+          document.querySelectorAll(".tab-content").forEach(function(content) {
+            content.classList.remove("active");
+          });
+          document.querySelectorAll(".tab").forEach(function(tab) {
+            tab.classList.remove("active");
+          });
+          document.getElementById(tabName).classList.add("active");
+          document.querySelector(`.tab[data-tab="${tabName}"]`).classList.add("active");
+        }
+
+        function refreshActiveTab() {
+          var activeContent = document.getElementById(activeTab);
+          var lmsensorsContainer = activeContent.querySelector(".lmsensors");
+          var fastfetchContainer = activeContent.querySelector(".fastfetch");
+          var node = nodes.find(n => n.name === activeTab);
+
+          loadFiles(node.lmsensorsFiles, lmsensorsContainer);
+          loadFiles(node.fastfetchFiles, fastfetchContainer);
+        }
+
+        setupTabs();
+      </script>
+    </div>
+    </body>
+    </html>
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lmsensors-webserver
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: lmsensors-webserver
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: lmsensors-webserver
+    spec:
+      containers:
+        - name: webserver
+          image: httpd:2.4
+          volumeMounts:
+            - mountPath: /usr/local/apache2/htdocs
+              name: data-volume
+            - mountPath: /usr/local/apache2/htdocs/index.html
+              name: index-html
+              subPath: index.html
+      volumes:
+      - name: data-volume
+        persistentVolumeClaim:
+          claimName: pvc-lmsensors
+      - name: index-html
+        configMap:
+          name: index-html
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: lmsensors-webserver-service
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 80
+  selector:
+    app: lmsensors-webserver

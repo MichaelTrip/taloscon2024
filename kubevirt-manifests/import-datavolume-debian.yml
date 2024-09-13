@@ -1,0 +1,18 @@
+apiVersion: cdi.kubevirt.io/v1beta1
+kind: DataVolume
+metadata:
+  name: "debian-12-image"
+  namespace: virtualmachines
+spec:
+  source:
+      http:
+        #url: "https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-genericcloud-arm64.qcow2"
+        #url: "https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-genericcloud-amd64.tar.xz" # S3 or GCS
+        url: "https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-generic-amd64.raw"
+  pvc:
+    accessModes:
+      - ReadWriteMany
+    resources:
+      requests:
+        storage: "3G"
+    storageClassName: nfs-client-zimaboard

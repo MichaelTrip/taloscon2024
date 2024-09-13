@@ -1,0 +1,23 @@
+---
+apiVersion: "k8s.cni.cncf.io/v1"
+kind: NetworkAttachmentDefinition
+metadata:
+  name: bridge-whereabouts
+  namespace: virtualmachines
+spec:
+  config: '{
+      "cniVersion": "0.3.1",
+      "name": "bridge-whereabouts",
+      "type": "bridge",
+      "bridge": "br0",
+      "ipam": {
+        "type": "whereabouts",
+        "range": "172.16.1.0/24",
+        "range_start": "172.16.1.120",
+        "range_end": "172.16.1.150",
+        "gateway": "172.16.1.254",
+        "routes": [
+          { "dst": "0.0.0.0/0" }
+        ]
+      }
+    }'

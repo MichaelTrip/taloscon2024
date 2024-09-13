@@ -1,0 +1,94 @@
+apiVersion: cdi.kubevirt.io/v1beta1
+kind: DataVolume
+metadata:
+  # The name for the new PersistentVolumeClaim, must be unique in your
+  # namespace
+  name: debian-external-pvc
+  namespace: virtualmachines
+spec:
+  source:
+    pvc:
+      # The namespace where the source PVC is. If this is not
+      # the same as the target namespace, this will require
+      # appropriate access to both namespaces.
+      name: debian-12-image
+      namespace: virtualmachines
+  pvc:
+    accessModes:
+      - ReadWriteMany
+    resources:
+      # This must be same size or larger than the source claim
+      # (the size of "my-sandbox-storage" in this example)
+      requests:
+        storage: 10Gi
+    # This must be same storage class as the source claim
+    # (the storage class of "my-sandbox-storage" in this example)
+    storageClassName: longhorn-rwx
+
+
+---
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+  name: debian-external-vm
+spec:
+  running: true
+  template:
+    metadata:
+      labels:
+        kubevirt.io/vm: debian-external-vm
+      annotations:
+        kubevirt.io/allow-pod-bridge-network-live-migration: "true"
+
+    spec:
+      domain:
+        cpu:
+          cores: 2
+          model: Haswell-noTSX-IBRS
+        resources:
+          requests:
+            memory: 2G
+            cpu: 1
+        devices:
+          disks:
+            - name: debian-external-pvc
+              disk:
+                bus: virtio
+            - name: cloudinitdisk
+              disk:
+                bus: virtio
+          interfaces:
+          - name: external
+            bridge: {}
+      networks:
+      - name: external
+        multus:
+          default: true
+          networkName: virtualmachines/bridge-whereabouts
+      volumes:
+        - name: debian-external-pvc
+          persistentVolumeClaim:
+            claimName: debian-external-pvc
+        - name: cloudinitdisk
+          cloudInitNoCloud:
+            networkData: |
+              network:
+                version: 2
+                renderer: networkd
+                ethernets:
+                    enp1s0:
+                      dhcp4: true
+            userData: |-
+              #cloud-config
+              package_upgrade: true
+              users:
+                - name: kubevirt
+                  lock_passwd: false
+                  passwd: $6$rounds=4096$BufowxTh2FjpCdMS$Ed0n7eKs2nq.8LDi0LBp.3t4VmjM4N0sBXDFervtH6H1rQUSZl8yXbPfMx.FoE5RFXhe32f2ZC.ZlzoKwSuNl1
+                  sudo: ['ALL=(ALL) NOPASSWD:ALL']
+                  groups: sudo
+                  shell: /bin/bash
+              ssh_pwauth: true
+              runcmd:
+                - "sudo touch /root/installed /tmp/foo"
+---

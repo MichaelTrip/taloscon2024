@@ -1,0 +1,113 @@
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: debian-webserver-cloudinit
+type: Opaque
+data:
+  userdata: I2Nsb3VkLWNvbmZpZwpwYWNrYWdlX3VwZ3JhZGU6IHRydWUKcGFja2FnZV91cGRhdGU6IHRydWUKcGFja2FnZXM6CiAgLSBhcGFjaGUyCiAgLSBtYXJpYWRiLXNlcnZlcgogIC0gcGhwCiAgLSBsaWJhcGFjaGUyLW1vZC1waHAKICAtIHBocC1teXNxbAp1c2VyczoKICAtIG5hbWU6IGt1YmV2aXJ0CiAgICBsb2NrX3Bhc3N3ZDogZmFsc2UKICAgIHBhc3N3ZDogJDYkcm91bmRzPTQwOTYkQnVmb3d4VGgyRmpwQ2RNUyRFZDBuN2VLczJucS44TERpMExCcC4zdDRWbWpNNE4wc0JYREZlcnZ0SDZIMXJRVVNabDh5WGJQZk14LkZvRTVSRlhoZTMyZjJaQy5abHpvS3dTdU5sMQogICAgc3VkbzogWydBTEw9KEFMTCkgTk9QQVNTV0Q6QUxMJ10KICAgIGdyb3Vwczogc3VkbwogICAgc2hlbGw6IC9iaW4vYmFzaApzc2hfcHdhdXRoOiB0cnVlCnJ1bmNtZDoKICAtICJzdWRvIHRvdWNoIC9yb290L2luc3RhbGxlZCAvdG1wL2ZvbyIKICAtICJlY2hvIFBDRkVUME5VV1ZCRklHaDBiV3crQ2p4b2RHMXNJR3hoYm1jOUltVnVJajRLUEdobFlXUStDaUFnSUNBOGJXVjBZU0JqYUdGeWMyVjBQU0pWVkVZdE9DSStDaUFnSUNBOGJXVjBZU0J1WVcxbFBTSjJhV1YzY0c5eWRDSWdZMjl1ZEdWdWREMGlkMmxrZEdnOVpHVjJhV05sTFhkcFpIUm9MQ0JwYm1sMGFXRnNMWE5qWVd4bFBURXNJSE5vY21sdWF5MTBieTFtYVhROWJtOGlQZ29nSUNBZ1BIUnBkR3hsUGxkbGJHTnZiV1VnVUdGblpUd3ZkR2wwYkdVK0NpQWdJQ0E4YkdsdWF5QnlaV3c5SW5OMGVXeGxjMmhsWlhRaUlHaHlaV1k5SW1oMGRIQnpPaTh2YzNSaFkydHdZWFJvTG1KdmIzUnpkSEpoY0dOa2JpNWpiMjB2WW05dmRITjBjbUZ3THpRdU5TNHlMMk56Y3k5aWIyOTBjM1J5WVhBdWJXbHVMbU56Y3lJK0Nqd3ZhR1ZoWkQ0S1BHSnZaSGtnWTJ4aGMzTTlJblJsZUhRdFkyVnVkR1Z5SWo0S0lDQWdJRHhrYVhZZ1kyeGhjM005SW1OdmJuUmhhVzVsY2lCa0xXWnNaWGdnYUMweE1EQWlQZ29nSUNBZ0lDQWdJRHhrYVhZZ1kyeGhjM005SW5KdmR5QmhiR2xuYmkxelpXeG1MV05sYm5SbGNpQjNMVEV3TUNJK0NpQWdJQ0FnSUNBZ0lDQWdJRHhrYVhZZ1kyeGhjM005SW1OdmJDMDJJRzE0TFdGMWRHOGlQZ29nSUNBZ0lDQWdJQ0FnSUNBZ0lDQWdQR1JwZGlCamJHRnpjejBpYW5WdFltOTBjbTl1SWo0S0lDQWdJQ0FnSUNBZ0lDQWdJQ0FnSUNBZ0lDQThhREVnWTJ4aGMzTTlJbVJwYzNCc1lYa3ROQ0krVjJWc1kyOXRaU0IwYnp3dmFERStDaUFnSUNBZ0lDQWdJQ0FnSUNBZ0lDQWdJQ0FnUEhBZ1kyeGhjM005SW14bFlXUWlQancvY0dod0lHVmphRzhnWjJWMGFHOXpkRzVoYldVb0tUc2dQejQ4TDNBK0NpQWdJQ0FnSUNBZ0lDQWdJQ0FnSUNBOEwyUnBkajRLSUNBZ0lDQWdJQ0FnSUNBZ1BDOWthWFkrQ2lBZ0lDQWdJQ0FnUEM5a2FYWStDaUFnSUNBOEwyUnBkajRLSUNBZ0lEeHpZM0pwY0hRZ2MzSmpQU0pvZEhSd2N6b3ZMM04wWVdOcmNHRjBhQzVpYjI5MGMzUnlZWEJqWkc0dVkyOXRMMkp2YjNSemRISmhjQzgwTGpVdU1pOXFjeTlpYjI5MGMzUnlZWEF1YldsdUxtcHpJajQ4TDNOamNtbHdkRDRLUEM5aWIyUjVQZ284TDJoMGJXdytDZz09IHwgYmFzZTY0IC1kID4gL3Zhci93d3cvaHRtbC9ob3N0bmFtbWUucGhwIgo=
+---
+
+apiVersion: cdi.kubevirt.io/v1beta1
+kind: DataVolume
+metadata:
+  # The name for the new PersistentVolumeClaim, must be unique in your
+  # namespace
+  name: debian-webserver-pvc
+  namespace: virtualmachines
+spec:
+  source:
+    pvc:
+      # The namespace where the source PVC is. If this is not
+      # the same as the target namespace, this will require
+      # appropriate access to both namespaces.
+      name: debian-12-image
+      namespace: virtualmachines
+  pvc:
+    accessModes:
+      - ReadWriteMany
+    resources:
+      # This must be same size or larger than the source claim
+      # (the size of "my-sandbox-storage" in this example)
+      requests:
+        storage: 10Gi
+    # This must be same storage class as the source claim
+    # (the storage class of "my-sandbox-storage" in this example)
+    storageClassName: longhorn-rwx
+
+---
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+  name: debian-webserver
+spec:
+  running: true
+  template:
+    metadata:
+      labels:
+        kubevirt.io/vm: debian-webserver
+      annotations:
+        kubevirt.io/allow-pod-bridge-network-live-migration: "true"
+
+    spec:
+      domain:
+        cpu:
+          cores: 1
+          model: Haswell-noTSX-IBRS
+        resources:
+          requests:
+            memory: 2G
+            cpu: 1
+        devices:
+          disks:
+            - name: debian-webserver-pvc
+              disk:
+                bus: virtio
+            - name: cloudinitdisk
+              disk:
+                bus: virtio
+          interfaces:
+          - name: podnet
+            masquerade: {}
+      networks:
+      - name: podnet
+        pod: {}
+      volumes:
+        - name: debian-webserver-pvc
+          persistentVolumeClaim:
+            claimName: debian-webserver-pvc
+        - name: cloudinitdisk
+          cloudInitNoCloud:
+            networkData: |
+              network:
+                version: 1
+                config:
+                  - type: physical
+                    name: enp1s0
+                    subnets:
+                      - type: dhcp
+            secretRef: 
+              name: debian-webserver-cloudinit
+---
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: null
+  labels:
+    kubevirt.io/vm: debian-webserver
+  name: debian-webserver
+spec:
+  ports:
+  - name: ssh
+    port: 22
+    protocol: TCP
+    targetPort: 22
+  - name: http
+    port: 80
+    protocol: TCP
+    targetPort: 80
+  selector:
+    kubevirt.io/vm: debian-webserver
+  type: LoadBalancer
+status:
+  loadBalancer: {}
