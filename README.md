@@ -67,7 +67,7 @@ Sources for my Kubevirt on Talos presentation. This repository contains everythi
 
 ## kubevirt-manifests
 
-This contains all my yaml files that i used while traveling over the KubeVirt highway. These are KubeVirt for different type of virtual machines. 
+This contains all my yaml files that i used while traveling over the KubeVirt highway. These are KubeVirt manifests for different type of virtual machines. 
 
 
 
